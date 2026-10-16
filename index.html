@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#C8321F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dinner">
+<link rel="manifest" href="/manifest.json">
+<title>Dinner Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Nunito,system-ui,sans-serif;color:#2B1B17;background:#fff}
+#app{max-width:480px;margin:0 auto;min-height:100dvh;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(88px + env(safe-area-inset-bottom))}
+h1{font-size:32px;font-weight:900;margin:0}h2{margin:4px 0 12px;font-size:24px;font-weight:900}
+h3,.eb{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#6B5650;font-weight:700}h3{margin:16px 0 6px}
+.hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+button{font:inherit;cursor:pointer}
+.btn{min-height:48px;padding:0 18px;border:0;border-radius:24px;background:#C8321F;color:#fff;font-weight:700}
+.ghost{min-height:48px;padding:0 18px;border:2px dashed #E3C9C0;border-radius:24px;background:#fff;color:#2B1B17;font-weight:700;width:100%}
+.rr{display:flex;gap:8px;margin:12px 0}.rr button{flex:1}.rr .ghost{border-style:solid}
+.day{display:flex;width:100%;align-items:center;gap:14px;min-height:64px;padding:8px 14px;margin-bottom:8px;border:0;border-radius:20px;background:#FFF1EC;text-align:left;color:inherit}
+.day.out{background:#fff;border:2px dashed #E3C9C0;color:#6B5650}.day.empty{background:#fff;border:2px solid #C8321F;color:#C8321F}
+.dn{width:40px;text-align:center;font-size:11px;font-weight:700;text-transform:uppercase;color:#6B5650}.dn b{display:block;font-size:20px;font-weight:900;color:#2B1B17}
+.dt{font-weight:700;font-size:16px}
+.chip{min-height:44px;padding:0 14px;border:0;border-radius:22px;background:#FFF1EC;color:#6B5650;font-weight:700}.chip.on{background:#C8321F;color:#fff}
+nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #F0DDD6;display:flex;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;min-height:56px;border:0;border-top:4px solid transparent;background:none;color:#6B5650;font-weight:700}nav .on{color:#C8321F;background:#FFF1EC;border-top-color:#C8321F}
+.ov{position:fixed;inset:0;background:rgba(43,27,23,.45);display:flex;align-items:flex-end;z-index:5}.z2{z-index:6}
+.sh{background:#fff;width:100%;max-width:480px;margin:0 auto;max-height:92dvh;overflow:auto;border-radius:24px 24px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom))}
+.card{display:flex;gap:12px;align-items:center;background:#FFF1EC;border-radius:20px;padding:14px 16px;margin-bottom:10px}.card>div{flex:1}.card small{display:block;color:#6B5650}.card a{color:#C8321F;font-weight:700;font-size:13px}
+.row{display:flex;gap:8px;margin:8px 0}.row input{flex:1}
+input,textarea{font:inherit;border:2px solid #F0DDD6;border-radius:16px;padding:10px 14px;width:100%;min-height:48px}
+.lnk{display:block;width:100%;min-height:44px;border:0;background:none;color:#6B5650;font-weight:700}
+.it{display:flex;align-items:center;gap:12px;min-height:52px;padding:0 14px;background:#FFF1EC;border-radius:16px;margin-bottom:6px;font-weight:700}
+.it input{width:22px;height:22px;min-height:0;accent-color:#C8321F;padding:0}.it span{flex:1}.it small{color:#6B5650;font-weight:500}.it.d{opacity:.5;text-decoration:line-through}
+.x{border:0;background:none;font-size:22px;min-width:44px;min-height:44px;color:#6B5650}
+
+.th{width:48px;height:48px;border-radius:12px;object-fit:cover;flex:none}.ph{width:100%;max-height:220px;object-fit:cover;border-radius:16px;margin-bottom:8px}.days{display:block}
+@media(min-width:900px){
+#app{max-width:1180px;margin-left:220px;padding:32px 40px}
+nav{top:0;right:auto;width:200px;flex-direction:column;border-top:0;border-right:1px solid #F0DDD6;padding:32px 12px}
+nav button{flex:none;text-align:left;padding:0 16px;border-top:0;border-left:4px solid transparent;border-radius:16px;margin-bottom:6px}nav .on{border-left-color:#C8321F}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:24px}
+.day{flex-direction:column;align-items:flex-start;gap:8px;min-height:150px;margin:0;padding:14px}.dn{width:auto;text-align:left}.day .th{width:100%;height:70px}
+.ov{align-items:center}.sh{border-radius:24px;max-width:520px}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const L={en:{week:'This week',next:'Next week',shop:'Shopping',rec:'Recipes',plan:'Plan next week',out:'Not eating at home',own:'Our own idea',ownph:'What are we eating?',empty:'Empty',pick:'Pick',view:'View recipe',more:'Show three others',clear:'Clear day',close:'Close',add:'Add',item:'Add an item',done:'Clear checked',like:'Liked',no:'Not for us',notes:'Our notes',ing:'Ingredients',steps:'Steps',nw:'New recipe',name:'Name',min:'Minutes',ingph:'Ingredients, one per line',stph:'Steps, one per line',save:'Save',code:'Household code',banner:'Time to plan next week',of:'of',none:'Nothing left to suggest. Add recipes first.',tokens:'No ideas right now, out of tokens',nokey:'AI ideas need an API key. See the README.',limit:'Daily idea limit reached',err:'Something went wrong',nofound:'No recipe found on that page',busy:'Thinking...',dbi:'Idea from TheMealDB',aii:'New AI idea',imp:'Import',url:'Paste a recipe link',kid:'Kid-friendly: hide spicy dishes',spicy:'Spicy',photo:'Add photo',planned:'Planned',srcl:'Source'},
+nl:{week:'Deze week',next:'Volgende week',shop:'Boodschappen',rec:'Recepten',plan:'Plan volgende week',out:'We eten niet thuis',own:'Eigen idee',ownph:'Wat eten we?',empty:'Nog leeg',pick:'Kies',view:'Bekijk recept',more:'Toon andere drie',clear:'Dag leegmaken',close:'Sluiten',add:'Voeg toe',item:'Voeg een product toe',done:'Afgevinkt wissen',like:'Lekker',no:'Niet voor ons',notes:'Onze notities',ing:'Ingrediënten',steps:'Stappen',nw:'Nieuw recept',name:'Naam',min:'Minuten',ingph:'Ingrediënten, één per regel',stph:'Stappen, één per regel',save:'Opslaan',code:'Huishoudcode',banner:'Tijd om volgende week te plannen',of:'van',none:'Niets meer te suggereren. Voeg eerst recepten toe.',tokens:'Geen ideeën nu, tokens op',nokey:'AI-ideeën hebben een API-sleutel nodig. Zie de README.',limit:'Daglimiet voor ideeën bereikt',err:'Er ging iets mis',nofound:'Geen recept gevonden op die pagina',busy:'Even denken...',dbi:'Idee van TheMealDB',aii:'Nieuw AI-idee',imp:'Importeer',url:'Plak een receptlink',kid:'Kindvriendelijk: geen pittige gerechten',spicy:'Pittig',photo:'Foto toevoegen',planned:'Gepland',srcl:'Bron'}};
+const lng=()=>localStorage.dp_lang||'en',t=k=>L[lng()][k]||k;
+const $=s=>document.querySelector(s),uid=()=>Math.random().toString(36).slice(2,9);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const iso=d=>d.toLocaleDateString('sv');
+const days=o=>{const m=new Date();m.setHours(12,0,0,0);m.setDate(m.getDate()-((m.getDay()+6)%7)+o*7);return[...Array(7)].map((_,i)=>{const d=new Date(m);d.setDate(m.getDate()+i);return d})};
+const SEED=()=>[['Pasta pesto',25,['Pasta','Pesto','Cherry tomatoes','Parmesan'],['Boil the pasta.','Stir through pesto and halved tomatoes.']],
+['Chicken fajitas',30,['Chicken breast','Bell peppers','Onion','Tortillas','Fajita spice','Limes'],['Slice and fry the chicken with the spices.','Add peppers and onion until soft.','Serve in warm tortillas with lime.']],
+['Turkey egg roll bowl',20,['Ground turkey','Cabbage','Carrot','Soy sauce','Rice'],['Cook the rice.','Fry the turkey, add cabbage and carrot.','Season with soy sauce and serve over rice.']],
+['Salmon with rice and broccoli',25,['Salmon fillets','Rice','Broccoli','Lemon'],['Bake the salmon at 200 C for 12 minutes.','Cook rice and steam the broccoli.']],
+['Shrimp stir-fry',25,['Shrimp','Rice','Bell peppers','Soy sauce','Garlic'],['Fry garlic and peppers.','Add shrimp until pink.','Season and serve with rice.']],
+['Frittata',25,['Eggs','Potatoes','Spinach','Feta'],['Fry sliced potatoes.','Add spinach and beaten eggs.','Top with feta and bake 10 minutes.']]]
+.map(([name,min,ing,steps])=>({id:uid(),name,min,ing,steps,notes:'',rating:0}));
+let S=null,code=localStorage.dp_code||'',busy=0,tab='week',wk=0,sheet=null,rv=null,nf=false;
+async function api(m,b){const r=await fetch('/api/state',{method:m,headers:{'x-code':code,'content-type':'application/json'},body:b&&JSON.stringify(b)});if(r.status===401){localStorage.removeItem('dp_code');code='';throw 401}return r.json()}
+async function load(){try{const s=await api('GET');if(busy||(S&&s.rev===S.rev))return;S=s;S.set=S.set||{kid:false};if(!S.recipes){S.recipes=SEED();S.plan=S.plan||{};S.shopping=S.shopping||[];save()}render()}catch(e){if(e===401)ask()}}
+function save(){busy++;api('PUT',S).then(r=>{S.rev=r.rev}).catch(()=>{}).finally(()=>busy--)}
+function ask(){const c=(prompt(t('code'))||'').trim();if(c){code=c;localStorage.dp_code=c;load()}}
+const R=()=>render(1);
+function setDay(k,v){S.shopping=S.shopping.filter(i=>i.src!==k||i.done);if(v)S.plan[k]=v;else delete S.plan[k];
+const r=v&&v.rid&&S.recipes.find(x=>x.id===v.rid);
+if(r){r.last=k;r.ing.forEach(n=>{if(!S.shopping.some(i=>!i.done&&i.name.toLowerCase()===n.toLowerCase()))S.shopping.push({id:uid(),name:n,src:k,from:r.name})})}save()}
+function rank(){const used=Object.values(S.plan).map(p=>p.rid),now=Date.now();
+return S.recipes.filter(r=>r.rating!==-1&&!(S.set.kid&&r.spicy)&&!used.includes(r.id)&&(!r.last||now-new Date(r.last+'T12:00')>12096e5))
+.map(r=>[(r.rating===1?3:0)+(r.last?0:1)+Math.random()*2,r]).sort((a,b)=>b[0]-a[0]).map(x=>x[1])}
+function openSheet(k,fl){sheet={k,flow:fl||null,skip:0,list:rank()};R()}
+function startFlow(){wk=1;tab='week';openSheet(iso(days(1)[0]),{off:1,i:0})}
+function adv(){const f=sheet.flow;if(f&&f.i<6){f.i++;sheet.k=iso(days(f.off)[f.i]);sheet.skip=0;sheet.list=rank()}else sheet=null;R()}
+function pick(id){setDay(sheet.k,{meal:S.recipes.find(r=>r.id===id).name,rid:id});adv()}
+function out(){setDay(sheet.k,{out:true});adv()}
+function own(){const v=$('#ownI').value.trim();if(!v)return;setDay(sheet.k,{meal:v});adv()}
+function clr(){setDay(sheet.k,null);adv()}
+function more(){sheet.skip+=3;if(sheet.skip>=sheet.list.length)sheet.skip=0;R()}
+function closeS(){sheet=null;R()}
+function showR(id){rv=id;R()}
+function note(v){S.recipes.find(r=>r.id===rv).notes=v;save()}
+function rate(v){const r=S.recipes.find(x=>x.id===rv);r.rating=r.rating===v?0:v;save();R()}
+function addI(){const v=$('#ni').value.trim();if(!v)return;S.shopping.push({id:uid(),name:v});save();R()}
+function tick(id){const i=S.shopping.find(x=>x.id===id);i.done=!i.done;save();R()}
+function rm(id){S.shopping=S.shopping.filter(x=>x.id!==id);save();R()}
+function clearDone(){S.shopping=S.shopping.filter(i=>!i.done);save();R()}
+function saveRecipe(){const n=$('#nn').value.trim();if(!n)return;const ls=v=>v.split('\n').map(s=>s.trim()).filter(Boolean);
+S.recipes.push({id:uid(),name:n,min:+$('#nm').value||30,ing:ls($('#ni2').value),steps:ls($('#ns').value),notes:'',rating:0});nf=false;save();R()}
+function lang(){localStorage.dp_lang=lng()==='en'?'nl':'en';R()}
+var msg='';
+const wide=()=>matchMedia('(min-width:900px)').matches;
+const thumb=r=>r&&r.img?`<img class="th" src="${esc(r.img)}" alt="" loading="lazy">`:'';
+const post=async(path,b)=>(await fetch(path,{method:'POST',headers:{'x-code':code,'content-type':'application/json'},body:JSON.stringify(b)})).json();
+async function idea(kind){sheet.msg=t('busy');R();try{const names=f=>S.recipes.filter(f).map(x=>x.name);
+const j=await post('/api/idea',{kind,kid:S.set.kid,liked:names(x=>x.rating===1),no:names(x=>x.rating===-1),have:names(()=>1)});
+if(j.error)sheet.msg=t(j.error);else{const rc={...j.recipe,id:uid(),notes:'',rating:0};S.recipes.push(rc);save();sheet.list.unshift(rc);sheet.skip=0;sheet.msg=''}}catch{sheet.msg=t('err')}R()}
+async function importUrl(){const u=$('#iu').value.trim();if(!u)return;msg=t('busy');R();try{const j=await post('/api/import',{url:u});
+if(j.error)msg=t(j.error);else{const rc={...j.recipe,id:uid(),notes:'',rating:0};S.recipes.push(rc);save();msg='';rv=rc.id}}catch{msg=t('err')}R()}
+function toggleSpicy(){const r=S.recipes.find(x=>x.id===rv);r.spicy=!r.spicy;save();R()}
+function photo(inp){const f=inp.files[0];if(!f)return;const im=new Image();im.onload=()=>{const c=document.createElement('canvas'),k=Math.min(1,640/Math.max(im.width,im.height));
+c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);S.recipes.find(x=>x.id===rv).img=c.toDataURL('image/jpeg',.75);save();R()};im.src=URL.createObjectURL(f)}
+function weekRow(o){return`<div class="days">`+days(o).map(d=>{const k=iso(d),p=S.plan[k],r=p&&p.rid&&S.recipes.find(x=>x.id===p.rid);
+return`<button class="day ${p?p.out?'out':'':'empty'}" onclick="openSheet('${k}')"><span class="dn">${d.toLocaleDateString(lng(),{weekday:'short'})}<b>${d.getDate()}</b></span>${thumb(r)}<span class="dt">${!p?t('empty'):p.out?t('out'):esc(p.meal)}</span></button>`}).join('')+`</div>`}
+function weekV(){const sat=[6,0].includes(new Date().getDay()),w=wide();
+return`<div class="hd"><h1>${t(w||!wk?'week':'next')}</h1><button class="chip" onclick="lang()">${lng()==='en'?'NL':'EN'}</button></div>`+
+(w?'':`<div class="rr" style="margin-top:0"><button class="chip ${wk?'':'on'}" onclick="wk=0;R()">${t('week')}</button><button class="chip ${wk?'on':''}" onclick="wk=1;R()">${t('next')}</button></div>`)+
+(sat&&!wk?`<button class="btn" style="width:100%;margin-bottom:12px" onclick="startFlow()">${t('banner')}</button>`:'')+
+(w?weekRow(0)+`<h2>${t('next')}</h2>`+weekRow(1):weekRow(wk))+
+`<button class="ghost" style="margin-top:8px;border-style:solid" onclick="startFlow()">${t('plan')}</button>`}
+function shopV(){const o=S.shopping.filter(i=>!i.done),d=S.shopping.filter(i=>i.done),row=i=>`<label class="it ${i.done?'d':''}"><input type="checkbox" ${i.done?'checked':''} onchange="tick('${i.id}')"><span>${esc(i.name)}</span><small>${esc(i.from||'')}</small><button class="x" aria-label="Remove" onclick="rm('${i.id}')">&times;</button></label>`;
+return`<div class="hd"><h1>${t('shop')}</h1></div><div class="row"><input id="ni" aria-label="${t('item')}" placeholder="${t('item')}" onkeydown="if(event.key==='Enter')addI()"><button class="btn" onclick="addI()">${t('add')}</button></div>`+o.map(row).join('')+(d.length?`<button class="lnk" onclick="clearDone()">${t('done')}</button>`+d.map(row).join(''):'')}
+function recsV(){return`<div class="hd"><h1>${t('rec')}</h1><button class="btn" aria-label="${t('nw')}" onclick="nf=true;R()">+</button></div>
+<label class="it"><input type="checkbox" ${S.set.kid?'checked':''} onchange="S.set.kid=this.checked;save();R()"><span>${t('kid')}</span></label>
+<div class="row"><input id="iu" aria-label="${t('url')}" placeholder="${t('url')}" onkeydown="if(event.key==='Enter')importUrl()"><button class="btn" onclick="importUrl()">${t('imp')}</button></div><div class="eb" style="margin:0 0 10px">${esc(msg)}</div>`+
+S.recipes.map(r=>`<button class="day" onclick="showR('${r.id}')">${thumb(r)}<span class="dt" style="flex:1">${esc(r.name)}</span><span class="eb">${r.spicy?t('spicy')+' · ':''}${r.min} min${r.rating===1?' · '+t('like'):r.rating===-1?' · '+t('no'):''}</span></button>`).join('')}
+function sheetV(){const k=sheet.k,l=sheet.list.slice(sheet.skip,sheet.skip+3),f=sheet.flow,p=S.plan[k];
+return`<div class="ov" onclick="if(event.target===this)closeS()"><div class="sh"><div class="eb">${f?`${f.i+1} ${t('of')} 7`:'&nbsp;'}</div><h2>${new Date(k+'T12:00').toLocaleDateString(lng(),{weekday:'long',day:'numeric',month:'long'})}</h2>`+
+(p&&p.rid?`<div class="card" style="background:#fff;border:2px solid #F0DDD6">${thumb(S.recipes.find(x=>x.id===p.rid))}<div><small>${t('planned')}</small><b>${esc(p.meal)}</b><a href="#" onclick="showR('${p.rid}');return false">${t('view')}</a></div></div>`:'')+
+(l.length?l.map(r=>`<div class="card">${thumb(r)}<div><b>${esc(r.name)}</b><small>${r.min} min${r.spicy?' · '+t('spicy'):''}${r.rating===1?' · '+t('like'):''}</small><a href="#" onclick="showR('${r.id}');return false">${t('view')}</a></div><button class="btn" onclick="pick('${r.id}')">${t('pick')}</button></div>`).join(''):`<p>${t('none')}</p>`)+
+`<div class="rr"><button class="ghost" onclick="idea('db')">${t('dbi')}</button><button class="ghost" onclick="idea('ai')">${t('aii')}</button></div><div class="eb" style="text-align:center">${esc(sheet.msg||'')}</div>
+<button class="ghost" onclick="out()">${t('out')}</button><div class="row"><input id="ownI" aria-label="${t('own')}" placeholder="${t('own')}: ${t('ownph')}" onkeydown="if(event.key==='Enter')own()"><button class="btn" onclick="own()">${t('add')}</button></div>
+<button class="lnk" onclick="more()">${t('more')}</button>${p?`<button class="lnk" onclick="clr()">${t('clear')}</button>`:''}<button class="lnk" onclick="closeS()">${t('close')}</button></div></div>`}
+function recV(){const r=S.recipes.find(x=>x.id===rv);
+return`<div class="ov z2" onclick="if(event.target===this){rv=null;R()}"><div class="sh">${r.img?`<img class="ph" src="${esc(r.img)}" alt="${esc(r.name)}">`:''}<div class="eb">${r.min} min${r.spicy?' · '+t('spicy'):''}</div><h2>${esc(r.name)}</h2><h3>${t('ing')}</h3><div>${r.ing.map(esc).join(' &middot; ')}</div><h3>${t('steps')}</h3><ol style="margin:0;padding-left:20px">${r.steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ol><h3>${t('notes')}</h3><textarea aria-label="${t('notes')}" onchange="note(this.value)">${esc(r.notes)}</textarea>
+<div class="rr"><button class="${r.rating===1?'btn':'ghost'}" onclick="rate(1)">${t('like')}</button><button class="${r.rating===-1?'btn':'ghost'}" onclick="rate(-1)">${t('no')}</button></div>
+<div class="rr"><label class="ghost" style="flex:1;display:flex;align-items:center;justify-content:center">${t('photo')}<input type="file" accept="image/*" hidden onchange="photo(this)"></label><button class="${r.spicy?'btn':'ghost'}" onclick="toggleSpicy()">${t('spicy')}</button></div>
+${/^https?:/.test(r.link||'')?`<a class="lnk" style="text-align:center" href="${esc(r.link)}" target="_blank" rel="noopener">${t('srcl')}</a>`:''}<button class="lnk" onclick="rv=null;R()">${t('close')}</button></div></div>`}
+function formV(){return`<div class="ov z2" onclick="if(event.target===this){nf=false;R()}"><div class="sh"><h2>${t('nw')}</h2><input id="nn" aria-label="${t('name')}" placeholder="${t('name')}"><div style="height:8px"></div><input id="nm" type="number" aria-label="${t('min')}" placeholder="${t('min')}"><h3>${t('ing')}</h3><textarea id="ni2" rows="5" placeholder="${t('ingph')}"></textarea><h3>${t('steps')}</h3><textarea id="ns" rows="5" placeholder="${t('stph')}"></textarea>
+<div class="rr"><button class="ghost" onclick="nf=false;R()">${t('close')}</button><button class="btn" onclick="saveRecipe()">${t('save')}</button></div></div></div>`}
+function render(f){if(!S)return;const a=document.activeElement;if(!f&&a&&/INPUT|TEXTAREA/.test(a.tagName))return;
+const o=S.shopping.filter(i=>!i.done).length;
+$('#app').innerHTML=(tab==='week'?weekV():tab==='shop'?shopV():recsV())+(sheet?sheetV():'')+(rv?recV():'')+(nf?formV():'')+
+`<nav>${[['week','week'],['shop','shop'],['recs','rec']].map(([k,l])=>`<button class="${tab===k?'on':''}" onclick="tab='${k}';R()">${t(l)}${k==='shop'&&o?' · '+o:''}</button>`).join('')}</nav>`}
+addEventListener('resize',()=>{clearTimeout(window.rt);window.rt=setTimeout(R,150)});
+if(!code)ask();else load();
+setInterval(load,5000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)load()});
+</script>
+</body>
+</html>

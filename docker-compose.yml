@@ -1,0 +1,12 @@
+services:
+  dinner:
+    build: .
+    restart: unless-stopped
+    environment:
+      HOUSEHOLD_CODE: ${HOUSEHOLD_CODE:?Set HOUSEHOLD_CODE in the .env file}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      AI_DAILY_LIMIT: ${AI_DAILY_LIMIT:-20}
+    volumes:
+      - ./data:/data
+    ports:
+      - "127.0.0.1:3000:3000"
