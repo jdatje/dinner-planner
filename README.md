@@ -17,3 +17,14 @@ Put an Anthropic API key in `.env` as `ANTHROPIC_API_KEY`, then `docker compose 
 
 ## Backup
 Copy `./data/state.json`.
+
+## Running without Docker (systemd + Tailscale Funnel)
+Run `node server.js` with `PORT=3100`, `HOUSEHOLD_CODE`, `DATA_FILE` set (server binds 127.0.0.1 by default), then
+`tailscale funnel --bg --https=8443 3100`.
+
+## Updating
+`cd /opt/dinner-planner && git pull && systemctl restart dinner-planner`
+Phones reload by themselves within seconds once the server runs the new version (the app compares a build hash every few seconds).
+
+## AI features
+Put `ANTHROPIC_API_KEY=...` in `.env` and restart. Without it, ideas and photo scanning are disabled; everything else works.
