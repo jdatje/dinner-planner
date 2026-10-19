@@ -94,7 +94,7 @@ chapters:'Chapters',newrec:'Add recipe',title:'Title',exfmt:'Type or paste your 
 gen:'General',lang:'Language',theme:'Appearance (this phone)',light:'Light',dark:'Dark',auto:'Auto',kid:'Kid-friendly: hide spicy dishes',plansec:'Planning',repeat:'Repeat a dinner after (weeks)',port:'People we cook for',fixed:'Days we usually eat out',planday:'Planning day',plantime:'Reminder time',notifnote:'For now the reminder is a banner in the app.',
 api:'AI ideas',today:'Ideas used today',credit:'Credit I bought (USD)',setbal:'Set balance',left:'Estimated credit left',bill:'Open billing page',apinote:'The estimate only counts what this app used.',nokey:'AI ideas need an API key on the server (see README).',tokens:'No ideas right now, out of tokens',limit:'Daily idea limit reached',err:'Something went wrong',badurl:'That link can not be used',nofound:'No recipe found on that page',busy:'Working...',
 importsec:'Import recipes',imp1:'Import one recipe',paste:'Paste a recipe link',check:'Check',noing:'No ingredients found',noimg:'No photo found',savedr:'Saved to Recipes',already:'Already in your recipes',discard:'Discard',imp2:'Bulk import',findc:'Find categories',thispage:'This page',findr:'Find recipes',selall:'Select all',selnone:'Select none',impn:'Import {n} selected',stop:'Stop',prog:'{d} of {t} · about {m} min left',finished:'Imported {a}, skipped {s}',nocats:'No categories found. Paste a category page link instead.',found:'{n} recipes found',scanmore:'Scan more pages',
-bm:'Import from your browser',bmcopy:'Copy bookmark code',bmcopied:'Copied',bmhelp:'Some sites block the server. Make a bookmark in your browser, and paste this code as its address. Then open a recipe page on that site and open the bookmark: the recipe is read in your own browser and sent here.',bmwait:'Waiting for the page...',
+bm:'Import from your browser',bmcopy:'Copy bookmark code',bmcopied:'Copied',bmhelp:'Some sites block the server. Make a bookmark in your browser, and paste this code as its address. Then open a recipe page on that site and open the bookmark: the recipe is read in your own browser and sent here. On a category page it lists all the recipes so you can tick the ones you want; keep that site tab open while importing.',bmwait:'Waiting for the page...',bmclosed:'The site tab was closed. Open the bookmark again on the site.',bmok:'Connected to',
 backup:'Backup',dl:'Download backup',restore:'Restore from file',restoreq:'Replace everything with this backup?',acct:'This phone',logout:'Log out this phone',codehint:'To change the household code, edit .env on the server.',version:'Version {v}',locked:'Too many wrong tries. Wait 15 minutes.',enter:'Household code'},
 nl:{
 week:'Week',shop:'Boodschappen',rec:'Recepten',book:'Kookboek',settings:'Instellingen',back:'Terug',
@@ -109,7 +109,7 @@ chapters:'Hoofdstukken',newrec:'Recept toevoegen',title:'Titel',exfmt:'Typ of pl
 gen:'Algemeen',lang:'Taal',theme:'Weergave (deze telefoon)',light:'Licht',dark:'Donker',auto:'Automatisch',kid:'Kindvriendelijk: geen pittige gerechten',plansec:'Plannen',repeat:'Gerecht pas na (weken) herhalen',port:'Aantal personen',fixed:'Dagen dat we meestal uit eten',planday:'Plandag',plantime:'Tijd herinnering',notifnote:'De herinnering is voorlopig een melding in de app.',
 api:'AI-ideeën',today:'Ideeën vandaag gebruikt',credit:'Tegoed dat ik kocht (USD)',setbal:'Saldo instellen',left:'Geschat tegoed over',bill:'Open facturatiepagina',apinote:'De schatting telt alleen wat deze app gebruikte.',nokey:'AI-ideeën hebben een API-sleutel op de server nodig (zie README).',tokens:'Geen ideeën nu, tokens op',limit:'Daglimiet voor ideeën bereikt',err:'Er ging iets mis',badurl:'Deze link kan niet gebruikt worden',nofound:'Geen recept gevonden op die pagina',busy:'Bezig...',
 importsec:'Recepten importeren',imp1:'Eén recept importeren',paste:'Plak een receptlink',check:'Controleer',noing:'Geen ingrediënten gevonden',noimg:'Geen foto gevonden',savedr:'Opgeslagen bij Recepten',already:'Staat al in je recepten',discard:'Weggooien',imp2:'Bulk importeren',findc:'Zoek categorieën',thispage:'Deze pagina',findr:'Zoek recepten',selall:'Alles selecteren',selnone:'Niets selecteren',impn:'Importeer {n} geselecteerde',stop:'Stop',prog:'{d} van {t} · nog ongeveer {m} min',finished:'{a} geïmporteerd, {s} overgeslagen',nocats:'Geen categorieën gevonden. Plak in plaats daarvan een link naar een categoriepagina.',found:'{n} recepten gevonden',scanmore:'Scan meer pagina’s',
-bm:'Importeren via je browser',bmcopy:'Kopieer bladwijzercode',bmcopied:'Gekopieerd',bmhelp:'Sommige sites blokkeren de server. Maak een bladwijzer in je browser en plak deze code als adres. Open dan een receptpagina op die site en open de bladwijzer: het recept wordt in je eigen browser gelezen en hierheen gestuurd.',bmwait:'Wachten op de pagina...',
+bm:'Importeren via je browser',bmcopy:'Kopieer bladwijzercode',bmcopied:'Gekopieerd',bmhelp:'Sommige sites blokkeren de server. Maak een bladwijzer in je browser en plak deze code als adres. Open dan een receptpagina op die site en open de bladwijzer: het recept wordt in je eigen browser gelezen en hierheen gestuurd. Op een categoriepagina krijg je alle recepten in een lijst om aan te vinken; laat dat tabblad open tijdens het importeren.',bmwait:'Wachten op de pagina...',bmclosed:'Het tabblad van de site is gesloten. Open de bladwijzer opnieuw op de site.',bmok:'Verbonden met',
 backup:'Back-up',dl:'Back-up downloaden',restore:'Herstel uit bestand',restoreq:'Alles vervangen door deze back-up?',acct:'Deze telefoon',logout:'Deze telefoon uitloggen',codehint:'Wijzig de huishoudcode door .env op de server aan te passen.',version:'Versie {v}',locked:'Te vaak een foute code. Wacht 15 minuten.',enter:'Huishoudcode'}};
 const ls={get(k){try{return localStorage.getItem(k)}catch{return null}},set(k,v){try{localStorage.setItem(k,v)}catch{}},del(k){try{localStorage.removeItem(k)}catch{}}};
 const ss={get(k){try{return sessionStorage.getItem(k)}catch{return null}},set(k,v){try{sessionStorage.setItem(k,v)}catch{}}};
@@ -260,11 +260,26 @@ function download(){const a=document.createElement('a');a.href=URL.createObjectU
 function restore(inp){const f=inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const o=JSON.parse(rd.result);if(!Array.isArray(o.recipes))throw 0;if(!confirm(t('restoreq')))return;for(const k of['plan','shopping','recipes','set','chapters','last','rate','notes'])if(k in o)S[k]=o[k];init();save();R()}catch{toast(t('err'))}};rd.readAsText(f)}
 
 /* ---------- import from the browser (bookmarklet) ---------- */
-function copyBm(){const A=location.origin,c="javascript:(()=>{var A='"+A+"',w=open(A+'/#import');addEventListener('message',function f(e){if(e.source===w&&e.data==='dp-ready'){w.postMessage({dp:1,url:location.href,html:document.documentElement.outerHTML},A);removeEventListener('message',f)}})})()";
+function copyBm(){const A=location.origin,c="javascript:(()=>{var A='"+A+"',w=open(A+'/#import'),s=0;addEventListener('message',function(e){var d=e.data;if(e.source!==w||e.origin!==A)return;if(d==='dp-ready'){if(!s){s=1;w.postMessage({dp:1,url:location.href,html:document.documentElement.outerHTML},A)}return}if(d&&d.dpf){var u;try{u=new URL(d.url,location.href)}catch(x){}if(!u||u.origin!==location.origin){w.postMessage({dpr:d.dpf,err:'origin'},A);return}fetch(u.href,{credentials:'include'}).then(function(r){if(!r.ok)throw r.status;return r.text()}).then(function(t){w.postMessage({dpr:d.dpf,html:t},A)},function(x){w.postMessage({dpr:d.dpf,err:String(x)},A)})}})})()";
  (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast(t('bmcopied')),()=>{prompt(t('bmcopy'),c)})}
-addEventListener('message',e=>{const d=e.data;if(!d||d.dp!==1||e.source!==window.opener||typeof d.html!=='string'||!/^https?:\/\//i.test(d.url))return;
- if(!S)return;go('set');imp.url=d.url;imp.rec=null;ri();impCheck(d.html.slice(0,5e6))});
-if(location.hash==='#import'&&window.opener){let n=0;const iv=setInterval(()=>{if(++n>40){clearInterval(iv);return}if(S)try{window.opener.postMessage('dp-ready','*')}catch{}},500);addEventListener('message',e=>{if(e.data&&e.data.dp===1)clearInterval(iv)})}
+/* the bookmark turns the site's tab into a fetch helper: pages are loaded by your own browser, parsed here/on the server */
+let proxy=null,pend={},pid=0;
+function sameSite(u){try{return proxy&&new URL(u).origin===proxy.origin}catch{return false}}
+function pfetch(u){return new Promise((ok,no)=>{if(!proxy||proxy.src.closed){no(new Error('closed'));return}const id=++pid;
+ const tm=setTimeout(()=>{delete pend[id];no(new Error('timeout'))},30000);pend[id]=m=>{clearTimeout(tm);m.err?no(new Error(m.err)):ok(m.html)};
+ try{proxy.src.postMessage({dpf:id,url:u},proxy.origin)}catch(e){no(e)}})}
+async function viaProxy(u){return sameSite(u)?{html:(await pfetch(u)).slice(0,5e6)}:{}}
+const pmsg=e=>String(e&&e.message)==='closed'?t('bmclosed'):e===429?t('locked'):t('err');
+addEventListener('message',async e=>{const d=e.data;if(!d||e.source!==window.opener)return;
+ if(d.dpr&&pend[d.dpr]){const f=pend[d.dpr];delete pend[d.dpr];f(d);return}
+ if(d.dp!==1||typeof d.html!=='string'||!/^https?:\/\//i.test(d.url)||!S)return;
+ proxy={src:e.source,origin:new URL(d.url).origin};go('set');imp.url=d.url;imp.rec=null;bulk.url=d.url;bulk.proxy=proxy.origin;
+ await impCheck(d.html.slice(0,5e6));
+ if(!imp.rec){imp.msg='';bulk.msg=t('busy');ri();
+  try{const j=await api('POST','/api/list',{url:d.url,html:d.html.slice(0,5e6)});bulk.srcs=[{url:d.url,next:j.next}];bulk.items=[];bulk.flt='';addItems(j.items);bulk.msg=t('found',{n:bulk.items.length});if(j.next)bulkScan(false)}catch(x){bulk.msg=pmsg(x)}ri()}
+ else bulk.msg=t('bmok')+' '+proxy.origin;ri()});
+if(location.hash==='#import'&&window.opener){let n=0;const iv=setInterval(()=>{if(++n>40||proxy){clearInterval(iv);return}if(S)try{window.opener.postMessage('dp-ready','*')}catch{}},500)}
+function addItems(items){const seen=new Set(bulk.items.map(i=>i.url));for(const it of items)if(!seen.has(it.url)){seen.add(it.url);bulk.items.push({url:it.url,name:it.name,on:false,have:S.recipes.some(r=>r.link===it.url)})}}
 /* ---------- import tool ---------- */
 const ri=()=>{const a=$('#imp1');if(a)a.innerHTML=imp1V();const b=$('#imp2');if(b)b.innerHTML=imp2V()};
 const known=r=>S.recipes.some(x=>(r.link&&x.link===r.link)||x.name.toLowerCase()===r.name.toLowerCase());
@@ -273,24 +288,23 @@ async function impCheck(html){const u=imp.url.trim();if(!u)return;imp.busy=true;
 function impSave(){const r=imp.rec;if(!r||known(r))return;r.id=uid();S.recipes.push(r);save('recipes');imp.rec=null;imp.msg=t('savedr');ri()}
 function impDiscard(){imp.rec=null;imp.msg='';ri()}
 async function bulkFind(){const u=bulk.url.trim();if(!u)return;bulk.msg=t('busy');bulk.cats=null;bulk.items=null;ri();
- try{const j=await api('POST','/api/discover',{url:u});if(j.error){bulk.msg=em(j);ri();return}
+ try{const j=await api('POST','/api/discover',{url:u,...await viaProxy(u)});if(j.error){bulk.msg=em(j);ri();return}
   bulk.cats=[];if(j.count>=3)bulk.cats.push({name:t('thispage')+' ('+j.count+')',url:u,on:true});j.categories.forEach(c=>bulk.cats.push({name:c.name,url:c.url,on:false}));
-  bulk.msg=bulk.cats.length?'':t('nocats')}catch(e){bulk.msg=e===429?t('locked'):t('err')}ri()}
+  bulk.msg=bulk.cats.length?'':t('nocats')}catch(e){bulk.msg=pmsg(e)}ri()}
 async function bulkScan(first){const sel=first?bulk.cats.filter(c=>c.on).map(c=>({url:c.url,next:c.url})):bulk.srcs;if(!sel.length)return;
- if(first){bulk.srcs=sel;bulk.items=[]}bulk.msg=t('busy');ri();let pages=0;const seen=new Set(bulk.items.map(i=>i.url));
- try{for(const s of bulk.srcs){while(s.next&&pages<8){const j=await api('POST','/api/list',{url:s.next});if(j.error){s.next=null;break}pages++;
-   for(const it of j.items)if(!seen.has(it.url)){seen.add(it.url);bulk.items.push({url:it.url,name:it.name,on:!S.recipes.some(r=>r.link===it.url)})}
-   s.next=j.next&&j.next!==s.next?j.next:null;bulk.msg=t('found',{n:bulk.items.length});ri();await sleep(600)}}
-  bulk.msg=t('found',{n:bulk.items.length})}catch(e){bulk.msg=e===429?t('locked'):t('err')}ri()}
+ if(first){bulk.srcs=sel;bulk.items=[];bulk.flt=''}bulk.msg=t('busy');bulk.scanning=true;ri();let pages=0;const cap=proxy?80:8;
+ try{for(const s of bulk.srcs){while(s.next&&pages<cap){const j=await api('POST','/api/list',{url:s.next,...await viaProxy(s.next)});if(j.error){s.next=null;break}pages++;
+   addItems(j.items);s.next=j.next&&j.next!==s.next?j.next:null;bulk.msg=t('found',{n:bulk.items.length});ri();await sleep(proxy?900:600)}}
+  bulk.msg=t('found',{n:bulk.items.length})}catch(e){bulk.msg=pmsg(e)}bulk.scanning=false;ri()}
 const eta=()=>{const rem=bulk.total-bulk.done,per=bulk.done>=2?(Date.now()-bulk.t0)/bulk.done:3000;return Math.max(1,Math.round(rem*per/60000))};
 async function bulkRun(){const todo=bulk.items.filter(i=>i.on);if(!todo.length)return;Object.assign(bulk,{running:true,stop:false,done:0,skip:0,added:0,total:todo.length,t0:Date.now(),msg:''});ri();
  for(const it of todo){if(bulk.stop)break;
   if(S.recipes.some(r=>r.link===it.url))bulk.skip++;
-  else try{const j=await api('POST','/api/import',{url:it.url,lang:lng()});const r=j.recipe;
+  else try{const j=await api('POST','/api/import',{url:it.url,lang:lng(),...await viaProxy(it.url)});const r=j.recipe;
     if(r&&r.ing.length&&r.steps.length&&!known(r)){r.id=uid();S.recipes.push(r);bulk.added++;if(bulk.added%5===0)save('recipes')}else bulk.skip++}
-   catch(e){if(e===401||e===429){bulk.stop=true;break}bulk.skip++}
+   catch(e){if(e===401||e===429||String(e&&e.message)==='closed'){bulk.stop=true;bulk.msg=pmsg(e);break}bulk.skip++}
   bulk.done++;it.on=false;ri();await sleep(1000)}
- save('recipes');bulk.running=false;bulk.msg=t('finished',{a:bulk.added,s:bulk.skip});ri()}
+ save('recipes');bulk.running=false;bulk.msg=(bulk.msg?bulk.msg+' · ':'')+t('finished',{a:bulk.added,s:bulk.skip});ri()}
 function warns(r){const w=[];if(!r.ing.length)w.push(t('noing'));if(!r.steps.length)w.push(t('nosteps'));if(!r.img)w.push(t('noimg'));return w}
 function imp1V(){let h=`<div class="row"><input id="iu" aria-label="${t('paste')}" placeholder="${t('paste')}" value="${esc(imp.url)}" oninput="imp.url=this.value" onkeydown="if(event.key==='Enter')impCheck()"><button class="btn" onclick="impCheck()">${t('check')}</button></div>`;
  if(imp.msg)h+=`<div class="eb">${esc(imp.msg)}</div>`;const r=imp.rec;
@@ -299,15 +313,22 @@ function imp1V(){let h=`<div class="row"><input id="iu" aria-label="${t('paste')
   <h3>${t('steps')}</h3><ol>${r.steps.slice(0,2).map(i=>`<li>${esc(i)}</li>`).join('')}${r.steps.length>2?'<li>…</li>':''}</ol>
   <div class="rr"><button class="ghost" onclick="impDiscard()">${t('discard')}</button><button class="btn" onclick="impSave()">${t('save')}</button></div></div>`}
  return h}
+const bgoLabel=n=>t('impn',{n})+(n?' · ~'+Math.max(1,Math.round(n*3/60))+' min':'');
+const bvis=()=>{const q=(bulk.flt||'').trim().toLowerCase();return bulk.items.map((c,i)=>[c,i]).filter(([c])=>!q||c.name.toLowerCase().includes(q))};
+const bulkItems=()=>{const v=bvis();return v.length?v.map(([c,i])=>`<label class="ck"><input type="checkbox" ${c.on?'checked':''} ${bulk.running?'disabled':''} onchange="btick(${i},this.checked)"><span>${esc(c.name)}${c.have?' ✓':''}</span></label>`).join(''):`<p class="mute">${t('norecipes')}</p>`};
+const bcount=()=>{const b=$('#bgo');if(b){const n=bulk.items.filter(i=>i.on).length;b.textContent=bgoLabel(n);b.disabled=!n}};
+function btick(i,v){bulk.items[i].on=v;bcount()}
+function bflt(v){bulk.flt=v;const e=$('#bl');if(e)e.innerHTML=bulkItems()}
+function bsel(v){bvis().forEach(([c])=>{if(!c.have)c.on=v});const e=$('#bl');if(e)e.innerHTML=bulkItems();bcount()}
 function imp2V(){let h=`<div class="row"><input id="bu" aria-label="${t('paste')}" placeholder="${t('paste')}" value="${esc(bulk.url)}" oninput="bulk.url=this.value" onkeydown="if(event.key==='Enter')bulkFind()"><button class="btn" onclick="bulkFind()">${t('findc')}</button></div>`;
  if(bulk.msg)h+=`<div class="eb">${esc(bulk.msg)}</div>`;
  if(bulk.cats&&bulk.cats.length&&!bulk.items)h+=`<div class="scr">${bulk.cats.map((c,i)=>`<label class="ck"><input type="checkbox" ${c.on?'checked':''} onchange="bulk.cats[${i}].on=this.checked"><span>${esc(c.name)}</span></label>`).join('')}</div><button class="btn" style="width:100%" onclick="bulkScan(true)">${t('findr')}</button>`;
  if(bulk.items&&bulk.items.length){const n=bulk.items.filter(i=>i.on).length;
-  h+=`<div class="rr"><button class="ghost" onclick="bulk.items.forEach(i=>i.on=true);ri()">${t('selall')}</button><button class="ghost" onclick="bulk.items.forEach(i=>i.on=false);ri()">${t('selnone')}</button></div>
-  <div class="scr">${bulk.items.map((c,i)=>`<label class="ck"><input type="checkbox" ${c.on?'checked':''} ${bulk.running?'disabled':''} onchange="bulk.items[${i}].on=this.checked;ri()"><span>${esc(c.name)}</span></label>`).join('')}</div>`;
+  h+=`<input id="bf" aria-label="${t('search')}" placeholder="${t('search')}" value="${esc(bulk.flt||'')}" oninput="bflt(this.value)" style="margin-top:8px"><div class="rr"><button class="ghost" onclick="bsel(true)">${t('selall')}</button><button class="ghost" onclick="bsel(false)">${t('selnone')}</button></div>
+  <div class="scr" id="bl">${bulkItems()}</div>`;
   if(bulk.srcs.some(s=>s.next)&&!bulk.running)h+=`<button class="ghost" style="margin-bottom:8px" onclick="bulkScan(false)">${t('scanmore')}</button>`;
   if(bulk.running)h+=`<div class="bar"><i style="width:${Math.round(bulk.done/bulk.total*100)}%"></i></div><div class="eb">${t('prog',{d:bulk.done,t:bulk.total,m:eta()})}</div><button class="ghost" style="margin-top:8px" onclick="bulk.stop=true">${t('stop')}</button>`;
-  else h+=`<button class="btn" style="width:100%" ${n?'':'disabled'} onclick="bulkRun()">${t('impn',{n})}${n?' · ~'+Math.max(1,Math.round(n*3/60))+' min':''}</button>`}
+  else h+=`<button class="btn" id="bgo" style="width:100%" ${n?'':'disabled'} onclick="bulkRun()">${bgoLabel(n)}</button>`}
  return h}
 
 /* ---------- views ---------- */

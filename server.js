@@ -209,6 +209,13 @@ async function getHtml(url) {
   throw new Error('redirects');
 }
 
+// page given by the user's own browser (for sites that block the server), or fetched here
+async function pageHtml(q) {
+  const raw = String(q.url || '');
+  if (q.html) { const x = new URL(raw); if (!/^https?:$/.test(x.protocol)) throw new Error('bad url'); return [String(q.html).slice(0, 5e6), x.href]; }
+  const u = await safe(raw); return [await getHtml(u), u];
+}
+
 /* ---------- AI (optional) ---------- */
 const SHAPE = 'Reply with JSON only, no other text: {"name":string,"min":number,"serv":number,"ing":[string with amount],"steps":[string],"spicy":boolean}. Use metric units (g, ml, EL, TL).';
 async function ai(content, maxTok = 1800) {
@@ -288,8 +295,8 @@ const server = http.createServer(async (req, res) => {
       let out;
       try {
         if (url === '/api/import') out = await importUrl(String(q.url || ''), q.lang, q.html);
-        else if (url === '/api/discover') { const u = await safe(String(q.url || '')); out = discoverFrom(await getHtml(u), u); }
-        else if (url === '/api/list') { const u = await safe(String(q.url || '')); out = listFrom(await getHtml(u), u); }
+        else if (url === '/api/discover') { const [html, u] = await pageHtml(q); out = discoverFrom(html, u); }
+        else if (url === '/api/list') { const [html, u] = await pageHtml(q); out = listFrom(html, u); }
         else if (url === '/api/idea') {
           const j = await ai(`Invent one new family dinner recipe (about 30 minutes, ingredients from a Dutch supermarket) for 4 people. Write in ${langName(q.lang)}. Liked: ${(q.liked || []).join(', ') || 'none yet'}. Avoid: ${(q.no || []).join(', ') || 'nothing'}. Do not repeat: ${(q.have || []).join(', ')}. ${q.kid ? 'Must not be spicy and must be kid-friendly.' : ''} ${SHAPE}`);
           out = j.recipe ? { recipe: fin({ serv: 4, ...j.recipe }, '', 'ai') } : j;
