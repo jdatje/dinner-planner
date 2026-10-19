@@ -229,8 +229,9 @@ async function ai(content, maxTok = 1800) {
   try { return { recipe: JSON.parse(((j.content && j.content[0] && j.content[0].text) || '').match(/\{[\s\S]*\}/)[0]) }; } catch { return { error: 'err' }; }
 }
 const langName = l => l === 'nl' ? 'Dutch' : 'English';
-async function importUrl(url, lang) {
-  const html = await getHtml(url);
+async function importUrl(url, lang, given) {
+  if (given && !/^https?:\/\//i.test(url)) throw new Error('bad url');
+  const html = given ? String(given).slice(0, 5e6) : await getHtml(url);
   const r = parseRecipe(html, url);
   if (r) return { recipe: r };
   if (!KEY) return { error: 'nofound' };
@@ -286,7 +287,7 @@ const server = http.createServer(async (req, res) => {
       const q = JSON.parse(await readBody(req) || '{}');
       let out;
       try {
-        if (url === '/api/import') out = await importUrl(String(q.url || ''), q.lang);
+        if (url === '/api/import') out = await importUrl(String(q.url || ''), q.lang, q.html);
         else if (url === '/api/discover') { const u = await safe(String(q.url || '')); out = discoverFrom(await getHtml(u), u); }
         else if (url === '/api/list') { const u = await safe(String(q.url || '')); out = listFrom(await getHtml(u), u); }
         else if (url === '/api/idea') {
