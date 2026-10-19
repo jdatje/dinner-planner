@@ -294,7 +294,7 @@ async function bulkFind(){const u=bulk.url.trim();if(!u)return;bulk.msg=t('busy'
 async function bulkScan(first){const sel=first?bulk.cats.filter(c=>c.on).map(c=>({url:c.url,next:c.url})):bulk.srcs;if(!sel.length)return;
  if(first){bulk.srcs=sel;bulk.items=[];bulk.flt=''}bulk.msg=t('busy');bulk.scanning=true;ri();let pages=0;const cap=proxy?80:8;
  try{for(const s of bulk.srcs){while(s.next&&pages<cap){const j=await api('POST','/api/list',{url:s.next,...await viaProxy(s.next)});if(j.error){s.next=null;break}pages++;
-   addItems(j.items);s.next=j.next&&j.next!==s.next?j.next:null;bulk.msg=t('found',{n:bulk.items.length});ri();await sleep(proxy?900:600)}}
+   const before=bulk.items.length;addItems(j.items);s.next=j.next&&j.next!==s.next&&bulk.items.length>before?j.next:null;bulk.msg=t('found',{n:bulk.items.length});ri();await sleep(proxy?900:600)}}
   bulk.msg=t('found',{n:bulk.items.length})}catch(e){bulk.msg=pmsg(e)}bulk.scanning=false;ri()}
 const eta=()=>{const rem=bulk.total-bulk.done,per=bulk.done>=2?(Date.now()-bulk.t0)/bulk.done:3000;return Math.max(1,Math.round(rem*per/60000))};
 async function bulkRun(){const todo=bulk.items.filter(i=>i.on);if(!todo.length)return;Object.assign(bulk,{running:true,stop:false,done:0,skip:0,added:0,total:todo.length,t0:Date.now(),msg:''});ri();

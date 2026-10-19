@@ -132,20 +132,34 @@ function anchors(html, base) {
 const CATW = /recept|recipe|categor|gerecht|gang|course|collectie|collection|keuken|cuisine|diner|dinner|lunch|ontbijt|breakfast|dessert|nagerecht|drank|drink|bbq|soep|soup|salade|pasta|vlees|vis|vega|snack|bijgerecht|hoofdgerecht/i;
 function recipeLinks(html, base) {
   const bu = new URL(base);
-  let part = (html.match(/<article\b[\s\S]*?<\/article>/gi) || []).join('\n');
-  if (!part) part = (html.match(/<main\b[\s\S]*?<\/main>/i) || [html])[0];
-  const seen = new Map();
-  for (const a of anchors(part, base)) {
-    if (a.u.host !== bu.host) continue;
-    a.u.search = '';
-    const p = a.u.pathname;
-    if (p === '/' || p === bu.pathname) continue;
-    if (/\.(jpe?g|png|gif|webp|svg|pdf|css|js)$/i.test(p) || /\/(page|pagina)\/\d+|\/(tag|tags|category|categorie|author|feed|wp-[a-z]+|contact|over-mij|zoeken|search)(\/|$)/i.test(p)) continue;
-    const slug = p.split('/').filter(Boolean).pop() || '';
-    if (slug.length < 6) continue;
-    if (!seen.has(a.u.href)) seen.set(a.u.href, a.text.length >= 3 ? a.text : slug.replace(/-/g, ' '));
+  const collect = part => {
+    const seen = new Map();
+    for (const a of anchors(part, base)) {
+      if (a.u.host !== bu.host) continue;
+      a.u.search = '';
+      const p = a.u.pathname;
+      if (p === '/' || p === bu.pathname) continue;
+      if (/\.(jpe?g|png|gif|webp|svg|pdf|css|js)$/i.test(p) || /\/(page|pagina)\/\d+|\/(tag|tags|category|categorie|author|feed|wp-[a-z]+|contact|over-mij|zoeken|search)(\/|$)/i.test(p)) continue;
+      const slug = p.split('/').filter(Boolean).pop() || '';
+      if (slug.length < 6) continue;
+      if (!seen.has(a.u.href)) seen.set(a.u.href, a.text.length >= 3 ? a.text : slug.replace(/-/g, ' '));
+    }
+    return [...seen].map(([url, name]) => ({ url, name }));
+  };
+  // 1) cards inside <article>, 2) <main>, 3) whole page: take the largest group of links that share a path shape
+  let r = collect((html.match(/<article\b[\s\S]*?<\/article>/gi) || []).join('\n'));
+  if (r.length >= 3) return r;
+  r = collect((html.match(/<main\b[\s\S]*?<\/main>/i) || [''])[0]);
+  if (r.length >= 3) return r;
+  const all = collect(html), groups = new Map();
+  for (const it of all) {
+    const segs = new URL(it.url).pathname.split('/').filter(Boolean);
+    const key = segs.length + ':' + segs.slice(0, -1).join('/') + ':' + (/\d{4,}$/.test(segs[segs.length - 1]) ? 'id' : 'x');
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(it);
   }
-  return [...seen].map(([url, name]) => ({ url, name }));
+  const best = [...groups.values()].sort((x, y) => y.length - x.length)[0] || [];
+  return best.length >= 3 ? best : (r.length ? r : all.slice(0, 0));
 }
 function discoverFrom(html, url) {
   const b = new URL(url), seen = new Set([b.href]), cats = [];
@@ -175,7 +189,15 @@ function nextPage(html, url) {
   const b = all.find(x => re.test(x.url));
   return b ? b.url : null;
 }
-function listFrom(html, url) { return { items: recipeLinks(html, url), next: nextPage(html, url) }; }
+function listFrom(html, url) {
+  const items = recipeLinks(html, url);
+  let next = nextPage(html, url), guess = false;
+  if (!next && items.length >= 3 && /pagina|page|volgende|next|>\s*\d+\s*</i.test(html)) { // JS-driven pagination: try ?page=N+1; the client stops when nothing new shows up
+    const u = new URL(url), cur = +(u.searchParams.get('page') || 1);
+    u.searchParams.set('page', String(cur + 1)); next = u.href; guess = true;
+  }
+  return { items, next, guess };
+}
 
 /* ---------- fetching other sites (never our own network) ---------- */
 function isPrivate(ip) {
