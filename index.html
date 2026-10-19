@@ -115,6 +115,7 @@ const lng=()=>ls.get('dp_lang')==='nl'?'nl':'en';
 const t=(k,v)=>{let s=L[lng()][k]??L.en[k]??k;if(v)for(const x in v)s=s.replace('{'+x+'}',v[x]);return s};
 const $=s=>document.querySelector(s),uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-3);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const em=j=>t(j.error)+(j.detail?' ('+j.detail+')':'');
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const iso=d=>d.toLocaleDateString('sv');
 const days=o=>{const m=new Date();m.setHours(12,0,0,0);m.setDate(m.getDate()-((m.getDay()+6)%7)+o*7);return[...Array(7)].map((_,i)=>{const d=new Date(m);d.setDate(m.getDate()+i);return d})};
@@ -260,11 +261,11 @@ function restore(inp){const f=inp.files[0];if(!f)return;const rd=new FileReader(
 const ri=()=>{const a=$('#imp1');if(a)a.innerHTML=imp1V();const b=$('#imp2');if(b)b.innerHTML=imp2V()};
 const known=r=>S.recipes.some(x=>(r.link&&x.link===r.link)||x.name.toLowerCase()===r.name.toLowerCase());
 async function impCheck(){const u=imp.url.trim();if(!u)return;imp.busy=true;imp.rec=null;imp.msg=t('busy');ri();
- try{const j=await api('POST','/api/import',{url:u,lang:lng()});if(j.error)imp.msg=t(j.error);else{imp.rec=j.recipe;imp.msg=known(j.recipe)?t('already'):''}}catch(e){imp.msg=e===429?t('locked'):t('err')}imp.busy=false;ri()}
+ try{const j=await api('POST','/api/import',{url:u,lang:lng()});if(j.error)imp.msg=em(j);else{imp.rec=j.recipe;imp.msg=known(j.recipe)?t('already'):''}}catch(e){imp.msg=e===429?t('locked'):t('err')}imp.busy=false;ri()}
 function impSave(){const r=imp.rec;if(!r||known(r))return;r.id=uid();S.recipes.push(r);save('recipes');imp.rec=null;imp.msg=t('savedr');ri()}
 function impDiscard(){imp.rec=null;imp.msg='';ri()}
 async function bulkFind(){const u=bulk.url.trim();if(!u)return;bulk.msg=t('busy');bulk.cats=null;bulk.items=null;ri();
- try{const j=await api('POST','/api/discover',{url:u});if(j.error){bulk.msg=t(j.error);ri();return}
+ try{const j=await api('POST','/api/discover',{url:u});if(j.error){bulk.msg=em(j);ri();return}
   bulk.cats=[];if(j.count>=3)bulk.cats.push({name:t('thispage')+' ('+j.count+')',url:u,on:true});j.categories.forEach(c=>bulk.cats.push({name:c.name,url:c.url,on:false}));
   bulk.msg=bulk.cats.length?'':t('nocats')}catch(e){bulk.msg=e===429?t('locked'):t('err')}ri()}
 async function bulkScan(first){const sel=first?bulk.cats.filter(c=>c.on).map(c=>({url:c.url,next:c.url})):bulk.srcs;if(!sel.length)return;

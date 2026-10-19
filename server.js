@@ -8,7 +8,7 @@ const DIR = path.dirname(FILE), USAGE_FILE = path.join(DIR, 'usage.json');
 const KEY = process.env.ANTHROPIC_API_KEY || '', LIMIT = +process.env.AI_DAILY_LIMIT || 20;
 const MODEL = process.env.AI_MODEL || 'claude-haiku-4-5-20251001';
 const PRICE_IN = +process.env.AI_PRICE_IN || 1, PRICE_OUT = +process.env.AI_PRICE_OUT || 5; // USD per million tokens (estimate)
-const UA = 'Mozilla/5.0 (compatible; DinnerPlanner/3)';
+const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36';
 
 /* ---------- state ---------- */
 let state = { rev: 0 };
@@ -198,7 +198,7 @@ async function getHtml(url) {
     u = await safe(u);
     const c = new AbortController(), t = setTimeout(() => c.abort(), 15000);
     try {
-      const r = await fetch(u, { signal: c.signal, redirect: 'manual', headers: { 'user-agent': UA, 'accept-language': 'nl,en;q=0.8', accept: 'text/html' } });
+      const r = await fetch(u, { signal: c.signal, redirect: 'manual', headers: { 'user-agent': UA, 'accept-language': 'nl,en;q=0.8', accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'upgrade-insecure-requests': '1' } });
       if (r.status >= 300 && r.status < 400 && r.headers.get('location')) { u = new URL(r.headers.get('location'), u).href; continue; }
       if (!r.ok) throw new Error('http ' + r.status);
       const buf = Buffer.from(await r.arrayBuffer());
@@ -301,7 +301,7 @@ const server = http.createServer(async (req, res) => {
             out = j.recipe ? { recipe: fin(j.recipe, '', 'scan') } : j;
           }
         } else return send(res, 404, '');
-      } catch (e) { out = { error: /blocked|bad url|Invalid URL/i.test(String(e.message)) ? 'badurl' : 'err' }; }
+      } catch (e) { const m = String(e && e.message || e); console.error('fetch fail', url, m); out = { error: /blocked|bad url|Invalid URL/i.test(m) ? 'badurl' : 'err', detail: m.slice(0, 80) }; }
       return send(res, 200, out);
     }
     send(res, 404, '');
