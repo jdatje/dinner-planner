@@ -192,12 +192,16 @@ function nextPage(html, url) {
 }
 function listFrom(html, url) {
   const items = recipeLinks(html, url);
-  let next = nextPage(html, url), guess = false;
-  if (!next && items.length >= 3 && /pagina|page|volgende|next|>\s*\d+\s*</i.test(html)) { // JS-driven pagination: try ?page=N+1; the client stops when nothing new shows up
-    const u = new URL(url), cur = +(u.searchParams.get('page') || 1);
-    u.searchParams.set('page', String(cur + 1)); next = u.href; guess = true;
+  const next = nextPage(html, url);
+  const out = { items, next };
+  if (!next && items.length >= 3) { // JS-driven pagination: offer guesses, the client keeps the first one that shows new recipes
+    const u = new URL(url), mk = (k, v) => { const x = new URL(url); x.searchParams.set(k, String(v)); return x.href; };
+    const hasOff = u.searchParams.has('offset'), hasPage = u.searchParams.has('page');
+    out.guess = hasOff ? [mk('offset', (+u.searchParams.get('offset') || 0) + items.length)]
+      : hasPage ? [mk('page', (+u.searchParams.get('page') || 1) + 1)]
+      : [mk('offset', items.length), mk('page', 2)];
   }
-  return { items, next, guess };
+  return out;
 }
 
 /* ---------- fetching other sites (never our own network) ---------- */

@@ -276,7 +276,7 @@ addEventListener('message',async e=>{const d=e.data;if(!d||e.source!==window.ope
  proxy={src:e.source,origin:new URL(d.url).origin};go('set');imp.url=d.url;imp.rec=null;bulk.url=d.url;bulk.proxy=proxy.origin;
  await impCheck(d.html.slice(0,5e6));
  if(!imp.rec){imp.msg='';bulk.msg=t('busy');ri();
-  try{const j=await api('POST','/api/list',{url:d.url,html:d.html.slice(0,5e6)});bulk.srcs=[{url:d.url,next:j.next}];bulk.items=[];bulk.flt='';addItems(j.items);bulk.msg=t('found',{n:bulk.items.length});if(j.next)bulkScan(false)}catch(x){bulk.msg=pmsg(x)}ri()}
+  try{const j=await api('POST','/api/list',{url:d.url,html:d.html.slice(0,5e6)});{const c=j.next?[j.next]:(j.guess||[]);bulk.srcs=[{url:d.url,next:c[0]||null,cands:c}]}bulk.items=[];bulk.flt='';addItems(j.items);bulk.msg=t('found',{n:bulk.items.length});if(j.next)bulkScan(false)}catch(x){bulk.msg=pmsg(x)}ri()}
  else bulk.msg=t('bmok')+' '+proxy.origin;ri()});
 if(location.hash==='#import'&&window.opener){let n=0;const iv=setInterval(()=>{if(++n>40||proxy){clearInterval(iv);return}if(S)try{window.opener.postMessage('dp-ready','*')}catch{}},500)}
 function addItems(items){const seen=new Set(bulk.items.map(i=>i.url));for(const it of items)if(!seen.has(it.url)){seen.add(it.url);bulk.items.push({url:it.url,name:it.name,on:false,have:S.recipes.some(r=>r.link===it.url)})}}
@@ -293,8 +293,14 @@ async function bulkFind(){const u=bulk.url.trim();if(!u)return;bulk.msg=t('busy'
   bulk.msg=bulk.cats.length?'':t('nocats')}catch(e){bulk.msg=pmsg(e)}ri()}
 async function bulkScan(first){const sel=first?bulk.cats.filter(c=>c.on).map(c=>({url:c.url,next:c.url})):bulk.srcs;if(!sel.length)return;
  if(first){bulk.srcs=sel;bulk.items=[];bulk.flt=''}bulk.msg=t('busy');bulk.scanning=true;ri();let pages=0;const cap=proxy?80:8;
- try{for(const s of bulk.srcs){while(s.next&&pages<cap){const j=await api('POST','/api/list',{url:s.next,...await viaProxy(s.next)});if(j.error){s.next=null;break}pages++;
-   const before=bulk.items.length;addItems(j.items);s.next=j.next&&j.next!==s.next&&bulk.items.length>before?j.next:null;bulk.msg=t('found',{n:bulk.items.length});ri();await sleep(proxy?900:600)}}
+ const get=async u=>{const j=await api('POST','/api/list',{url:u,...await viaProxy(u)});return j};
+ try{for(const s of bulk.srcs){let cands=s.cands||(s.next?[s.next]:[]);
+  while(cands.length&&pages<cap){let hit=null;
+   for(const u of cands){const j=await get(u);pages++;if(j.error)continue;const before=bulk.items.length;addItems(j.items);await sleep(proxy?900:600);
+    if(bulk.items.length>before){hit=j;s.last=u;break}}
+   bulk.msg=t('found',{n:bulk.items.length});ri();
+   cands=hit?(hit.next?[hit.next]:(hit.guess||[])):[];s.cands=cands;s.next=cands[0]||null}
+  }
   bulk.msg=t('found',{n:bulk.items.length})}catch(e){bulk.msg=pmsg(e)}bulk.scanning=false;ri()}
 const eta=()=>{const rem=bulk.total-bulk.done,per=bulk.done>=2?(Date.now()-bulk.t0)/bulk.done:3000;return Math.max(1,Math.round(rem*per/60000))};
 async function bulkRun(){const todo=bulk.items.filter(i=>i.on);if(!todo.length)return;Object.assign(bulk,{running:true,stop:false,done:0,skip:0,added:0,total:todo.length,t0:Date.now(),msg:''});ri();
