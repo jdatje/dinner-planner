@@ -148,7 +148,8 @@ function recipeLinks(html, base) {
   };
   // 1) cards inside <article>, 2) <main>, 3) whole page: take the largest group of links that share a path shape
   let r = collect((html.match(/<article\b[\s\S]*?<\/article>/gi) || []).join('\n'));
-  if (r.length >= 3) return r;
+  if (r.length >= 2) return r;
+  const art = r;
   r = collect((html.match(/<main\b[\s\S]*?<\/main>/i) || [''])[0]);
   if (r.length >= 3) return r;
   const all = collect(html), groups = new Map();
@@ -159,7 +160,7 @@ function recipeLinks(html, base) {
     groups.get(key).push(it);
   }
   const best = [...groups.values()].sort((x, y) => y.length - x.length)[0] || [];
-  return best.length >= 3 ? best : (r.length ? r : all.slice(0, 0));
+  return best.length >= 3 ? best : (art.length ? art : r);
 }
 function discoverFrom(html, url) {
   const b = new URL(url), seen = new Set([b.href]), cats = [];
